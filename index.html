@@ -7,6 +7,7 @@
 
 <script src="crewbuilderdata.js"></script>
 <script src="sailordata.js"></script>
+<script src="crewengine.js"></script>
 
 <style>
 
@@ -81,6 +82,7 @@ Prebuilt Builds
 <select id="presetBuilds"></select>
 
 <button onclick="loadPreset()">Load Preset</button>
+<button onclick="calculateCrew()">Calculate Stats</button>
 <br>
 
 </div>
@@ -93,6 +95,8 @@ Prebuilt Builds
 <th>Role</th>
 <th>Sailor Type</th>
 <th>Class</th>
+<th>Boost</th>
+<th>Stats</th>
 <th>Remove</th>
 </tr>
 </thead>
@@ -116,6 +120,8 @@ Export / Import
 <br>
 <button onclick="exportBuild()">Export Build</button>
 <button onclick="importBuild()">Import Build</button>
+
+
 <script>
 
 
@@ -342,6 +348,12 @@ ${premSailors.map(s=>`<option>${s.type}</option>`).join("")}
 </td>
 
 <td class="classCell"></td>
+
+<td>
+<input type="checkbox" class="boostToggle">
+</td>
+
+<td class="statsCell"></td>
 
 <td>
 <button onclick="removeRow(this)">X</button>
@@ -830,11 +842,79 @@ parent=classId
 })
 
 }
+
+function gatherCrewData(){
+
+const rows=[...document.querySelectorAll("#crewTable tbody tr")]
+
+return rows.map(row=>{
+
+const role=row.querySelector(".roleSelect").value
+const sailorType=row.querySelector(".sailorSelect").value
+const boost=row.querySelector(".boostToggle")?.checked || false
+
+const classes=[...row.querySelectorAll(".classSelect")]
+.map(c=>c.value)
+
+const levels=[...row.querySelectorAll(".classLevel")]
+.map(l=>Number(l.value))
+
+const classPath=classes.map((c,i)=>({
+
+classId:Number(c),
+level:levels[i]
+
+}))
+
+return{
+role:role,
+sailorType:sailorType,
+classPath:classPath,
+boost:boost,
+finalLevel:125
+}
+
+})
+
+}   // <-- ADD THIS LINE
+
+function calculateCrew(){
+
+const crew=gatherCrewData()
+
+const results=CrewEngine.buildCrew(crew) || []
+
+const rows=document.querySelectorAll("#crewTable tbody tr")
+
+results.forEach((stats,i)=>{
+
+const row=rows[i]
+
+const cell=row.querySelector(".statsCell")
+
+if(!cell) return
+
+cell.innerHTML=`
+Pot:${stats.potential}<br>
+Acc:${stats.accuracy}<br>
+Rld:${stats.reload}<br>
+Tor:${stats.torpedo}<br>
+AAW:${stats.aaw}<br>
+Rep:${stats.repair}<br>
+Res:${stats.restore}<br>
+Eng:${stats.engine}<br>
+Air:${stats.aircraft}<br>
+Ftr:${stats.fighter}<br>
+Bom:${stats.bomber}
+`
+
+})
+
+}
 </script>
 
 </body>
 
 </html>
-
 
 
