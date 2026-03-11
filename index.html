@@ -740,6 +740,9 @@ const roles=[...document.querySelectorAll(".roleSelect")]
 const sailors=[...document.querySelectorAll(".sailorSelect")]
 .map(s=>s.value)
 
+const boosts=[...document.querySelectorAll(".boostToggle")]
+.map(b=>b.checked)
+
 const classPaths=[...document.querySelectorAll("#crewTable tbody tr")]
 .map(row=>{
 
@@ -758,7 +761,8 @@ nation:nation,
 ship:ship,
 roles:roles,
 sailors:sailors,
-classPaths:classPaths
+classPaths:classPaths,
+boosts:boosts
 }
 
 const encoded=btoa(JSON.stringify(data))
@@ -916,5 +920,6 @@ Bom:${stats.bomber}
 </body>
 
 </html>
+
 
 
