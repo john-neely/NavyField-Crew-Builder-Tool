@@ -933,6 +933,7 @@ const rows=document.querySelectorAll("#crewTable tbody tr")
 
 let totalRepair = 0;
 let totalEngine = 0;
+let totalWeight = 0;
 const statBlockStyle = "font-size:12px; text-align:left; display:inline-block; margin-right:5px; vertical-align:top; border:1px solid #ddd; padding:2px;"
 
 results.forEach((stats,i)=>{
@@ -948,6 +949,7 @@ const metrics = CrewEngine.calculateTrueAbilities(stats, c.role, c.recruits, c.e
 
 totalRepair += metrics.repPerSec;
 if(c.role === "Engineer") totalEngine += metrics.engineOH;
+totalWeight += metrics.sailorWeight;
 
 let baseHTML = `<b>Base:</b><br>`;
 const r = c.role;
@@ -988,6 +990,8 @@ if (metrics.priCap) {
     taHTML += `Pri Cap: ${(metrics.priTA/metrics.priCap*100).toFixed(1)}%<br>`;
 }
 
+taHTML += `Weight: ${metrics.sailorWeight.toFixed(0)}t<br>`;
+
 cell.innerHTML=`
 <div style="${statBlockStyle}">
 ${baseHTML}
@@ -999,13 +1003,12 @@ ${taHTML}
 
 })
 
-const totalsDiv = document.getElementById("crewTotals")
-totalsDiv.style.display = "block"
-
+const totalsDiv = document.getElementById("crewTotals").style.display="block"
 const REPAIR_CAP = 280;
 const totalRepPct = (totalRepair / REPAIR_CAP) * 100;
-document.getElementById("repairTotal").innerHTML = "<b>Total Repair/sec:</b> " + totalRepair.toFixed(3) + " (" + totalRepPct.toFixed(1) + "% of cap)";
-document.getElementById("engineTotal").innerHTML = "<b>Total Engine OH/sec:</b> " + totalEngine.toFixed(3);
+document.getElementById("repairTotal").innerHTML=`<b>Total Repair:</b> ${totalRepair.toFixed(3)} Rep/s`
+document.getElementById("engineTotal").innerHTML=`<b>Total Engine:</b> ${totalEngine.toFixed(3)} OH/s<br><b>Total Crew Weight:</b> ${totalWeight.toFixed(0)}t`
+document.getElementById("repairTotal").innerHTML += " (" + totalRepPct.toFixed(1) + "% of cap)";
 
 }
 </script>
