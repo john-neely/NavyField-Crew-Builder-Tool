@@ -361,7 +361,8 @@ ${premSailors.map(s=>`<option>${s.type}</option>`).join("")}
 <div style="font-size:12px; text-align:left; display:inline-block;">
 R: <input type="number" class="recInput" style="width:50px" value="0" min="0"><br>
 E: <input type="number" class="expInput" style="width:50px" value="100" min="0"><br>
-V: <input type="number" class="vetInput" style="width:50px" value="100" min="0">
+V: <input type="number" class="vetInput" style="width:50px" value="100" min="0"><br>
+Total: <span class="totalCrewDisplay">200</span>
 </div>
 </td>
 
@@ -379,6 +380,19 @@ V: <input type="number" class="vetInput" style="width:50px" value="100" min="0">
 
 tbody.appendChild(row)
 buildClassStep(row)
+
+const updateCrewTotal = () => {
+    const r = Number(row.querySelector(".recInput").value) || 0;
+    const e = Number(row.querySelector(".expInput").value) || 0;
+    const v = Number(row.querySelector(".vetInput").value) || 0;
+    row.querySelector(".totalCrewDisplay").innerText = r + e + v;
+};
+
+row.querySelector(".recInput").addEventListener("input", updateCrewTotal);
+row.querySelector(".expInput").addEventListener("input", updateCrewTotal);
+row.querySelector(".vetInput").addEventListener("input", updateCrewTotal);
+updateCrewTotal();
+
 }
 
 
