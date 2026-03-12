@@ -939,17 +939,24 @@ if (r === "Seaman") {
     }
 }
 
+let taHTML = `<b>True Ability:</b><br>Rep/s: ${metrics.repPerSec.toFixed(3)}<br>`;
+
+if (r === "Engineer") {
+    taHTML += `Eng/s: ${metrics.engineOH.toFixed(3)}<br>`;
+}
+if (r === "Main Gunner" || r === "HH" || r === "AA/DP") {
+    taHTML += `Acc: ${metrics.accPct.toFixed(1)}%<br>Rld: ${metrics.rldPct.toFixed(1)}%<br>`;
+}
+if (metrics.priCap) {
+    taHTML += `Pri Cap: ${(metrics.priTA/metrics.priCap*100).toFixed(1)}%<br>`;
+}
+
 cell.innerHTML=`
 <div style="${statBlockStyle}">
 ${baseHTML}
 </div>
 <div style="${statBlockStyle}">
-<b>True Ability:</b><br>
-Rep/s: ${metrics.repPerSec.toFixed(3)}<br>
-Eng/s: ${c.role==='Engineer' ? metrics.engineOH.toFixed(3) : '-'}<br>
-Acc: ${metrics.accPct.toFixed(1)}%<br>
-Rld: ${metrics.rldPct.toFixed(1)}%<br>
-${metrics.priCap ? `Pri Cap: ${(metrics.priTA/metrics.priCap*100).toFixed(1)}%` : ''}
+${taHTML}
 </div>
 `
 
