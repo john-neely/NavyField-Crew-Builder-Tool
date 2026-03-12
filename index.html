@@ -95,6 +95,7 @@ Prebuilt Builds
 <th>Role</th>
 <th>Sailor Type</th>
 <th>Class</th>
+<th>Crew Size</th>
 <th>Boost</th>
 <th>Stats</th>
 <th>Remove</th>
@@ -104,6 +105,11 @@ Prebuilt Builds
 <tbody></tbody>
 
 </table>
+
+<div id="crewTotals" style="margin-top:20px; font-size:14px; padding:10px; background:#f0f0f0; border:1px solid #ccc; display:none;">
+<div id="repairTotal"></div>
+<div id="engineTotal"></div>
+</div>
 
 <br>
 
@@ -197,8 +203,8 @@ const nationSelect=document.getElementById("nationSelect")
 
 nations.forEach(n=>{
 let o=document.createElement("option")
-o.value=n
-o.text=n
+o.value=n.Nation
+o.text=n.Nation
 nationSelect.appendChild(o)
 })
 
@@ -350,6 +356,14 @@ ${premSailors.map(s=>`<option>${s.type}</option>`).join("")}
 <td class="classCell"></td>
 
 <td>
+<div style="font-size:12px; text-align:left; display:inline-block;">
+R: <input type="number" class="recInput" style="width:50px" value="0" min="0"><br>
+E: <input type="number" class="expInput" style="width:50px" value="100" min="0"><br>
+V: <input type="number" class="vetInput" style="width:50px" value="100" min="0">
+</div>
+</td>
+
+<td>
 <input type="checkbox" class="boostToggle">
 </td>
 
@@ -410,17 +424,27 @@ document.querySelector("#crewTable tbody").innerHTML=""
 SAVE BUILD
 ------------------------- */
 
-function saveBuild(){
+function getUIState(){
 
-const name=document.getElementById("buildName").value
-
-if(!name) return alert("Enter a build name")
+const nation=document.getElementById("nationSelect").value
+const shipCategory=document.getElementById("shipCategory").value
+const ship=document.getElementById("shipSelect").value
 
 const roles=[...document.querySelectorAll(".roleSelect")]
 .map(r=>r.value)
 
 const sailors=[...document.querySelectorAll(".sailorSelect")]
 .map(s=>s.value)
+
+const boosts=[...document.querySelectorAll(".boostToggle")]
+.map(b=>b.checked)
+
+const recruits=[...document.querySelectorAll(".recInput")]
+.map(i=>Number(i.value))
+const experts=[...document.querySelectorAll(".expInput")]
+.map(i=>Number(i.value))
+const vets=[...document.querySelectorAll(".vetInput")]
+.map(i=>Number(i.value))
 
 const classPaths=[...document.querySelectorAll("#crewTable tbody tr")]
 .map(row=>{
@@ -435,32 +459,40 @@ return {classes,levels}
 
 })
 
-const data={
+return {
+nation:nation,
+shipCategory:shipCategory,
+ship:ship,
 roles:roles,
 sailors:sailors,
-classPaths:classPaths
+classPaths:classPaths,
+boosts:boosts,
+recruits:recruits,
+experts:experts,
+vets:vets
 }
 
-localStorage.setItem("crew_"+name,JSON.stringify(data))
-
-updateSaved()
-
 }
 
+function setUIState(data){
 
-/* -------------------------
-LOAD BUILD
-------------------------- */
+if(data.nation){
+document.getElementById("nationSelect").value=data.nation
+populateCategories()
+}
 
-function loadBuild(){
+if(data.shipCategory){
+document.getElementById("shipCategory").value=data.shipCategory
+populateShips()
+}
 
-const name=document.getElementById("savedBuilds").value
-
-const data=JSON.parse(localStorage.getItem("crew_"+name))
-
-if(!data) return
+if(data.ship){
+document.getElementById("shipSelect").value=data.ship
+}
 
 newCrew()
+
+if(!data.roles) return
 
 data.roles.forEach(()=>addRow())
 
@@ -471,11 +503,25 @@ if(data.roles[i]) r.value=data.roles[i]
 
 document.querySelectorAll(".sailorSelect")
 .forEach((s,i)=>{
+if(data.sailors && data.sailors[i]) s.value=data.sailors[i]
+})
+
+document.querySelectorAll(".boostToggle")
+.forEach((b,i)=>{
 if(data.boosts && data.boosts[i]){
 b.checked=true
 }
 })
 
+document.querySelectorAll(".recInput").forEach((inp, i) => {
+if(data.recruits && data.recruits[i] !== undefined) inp.value = data.recruits[i];
+})
+document.querySelectorAll(".expInput").forEach((inp, i) => {
+if(data.experts && data.experts[i] !== undefined) inp.value = data.experts[i];
+})
+document.querySelectorAll(".vetInput").forEach((inp, i) => {
+if(data.vets && data.vets[i] !== undefined) inp.value = data.vets[i];
+})
 
 /* restore class paths */
 
@@ -492,6 +538,8 @@ cell.innerHTML=""
 let parent=null
 
 path.classes.forEach((classId,stepIndex)=>{
+
+if(!classId && stepIndex > 0) return
 
 buildClassStep(row,parent)
 
@@ -512,6 +560,37 @@ parent=classId
 })
 
 })
+
+}
+
+function saveBuild(){
+
+const name=document.getElementById("buildName").value
+
+if(!name) return alert("Enter a build name")
+
+const data=getUIState()
+
+localStorage.setItem("crew_"+name,JSON.stringify(data))
+
+updateSaved()
+
+}
+
+
+/* -------------------------
+LOAD BUILD
+------------------------- */
+
+function loadBuild(){
+
+const name=document.getElementById("savedBuilds").value
+
+const data=JSON.parse(localStorage.getItem("crew_"+name))
+
+if(!data) return
+
+setUIState(data)
 
 }
 
@@ -733,39 +812,7 @@ populateCategories()
 updateSaved()
 function exportBuild(){
 
-const nation=document.getElementById("nationSelect").value
-const ship=document.getElementById("shipSelect").value
-
-const roles=[...document.querySelectorAll(".roleSelect")]
-.map(r=>r.value)
-
-const sailors=[...document.querySelectorAll(".sailorSelect")]
-.map(s=>s.value)
-
-const boosts=[...document.querySelectorAll(".boostToggle")]
-.map(b=>b.checked)
-
-const classPaths=[...document.querySelectorAll("#crewTable tbody tr")]
-.map(row=>{
-
-const classes=[...row.querySelectorAll(".classSelect")]
-.map(c=>c.value)
-
-const levels=[...row.querySelectorAll(".classLevel")]
-.map(l=>l.value)
-
-return {classes,levels}
-
-})
-
-const data={
-nation:nation,
-ship:ship,
-roles:roles,
-sailors:sailors,
-classPaths:classPaths,
-boosts:boosts
-}
+const data=getUIState()
 
 const encoded=btoa(JSON.stringify(data))
 
@@ -790,66 +837,13 @@ alert("Invalid build code")
 return
 }
 
-document.getElementById("nationSelect").value=data.nation
-
-populateCategories()
-
-document.getElementById("shipSelect").value=data.ship
-
-newCrew()
-
-data.roles.forEach(()=>addRow())
-
-document.querySelectorAll(".roleSelect")
-.forEach((r,i)=>{
-if(data.roles[i]) r.value=data.roles[i]
-})
-
-document.querySelectorAll(".sailorSelect")
-.forEach((s,i)=>{
-if(data.sailors[i]) s.value=data.sailors[i]
-})
-
-
-/* restore class paths */
-
-document.querySelectorAll("#crewTable tbody tr")
-.forEach((row,i)=>{
-
-const path=data.classPaths?.[i]
-
-if(!path) return
-
-const cell=row.querySelector(".classCell")
-cell.innerHTML=""
-
-let parent=null
-
-path.classes.forEach((classId,stepIndex)=>{
-
-buildClassStep(row,parent)
-
-const steps=row.querySelectorAll(".classStep")
-const step=steps[steps.length-1]
-
-const classSelect=step.querySelector(".classSelect")
-const levelInput=step.querySelector(".classLevel")
-
-classSelect.value=classId
-
-if(path.levels[stepIndex]){
-levelInput.value=path.levels[stepIndex]
-}
-
-parent=classId
-
-})
-
-})
+setUIState(data)
 
 }
 
 function gatherCrewData(){
+
+const nation=document.getElementById("nationSelect").value
 
 const rows=[...document.querySelectorAll("#crewTable tbody tr")]
 
@@ -858,6 +852,10 @@ return rows.map(row=>{
 const role=row.querySelector(".roleSelect").value
 const sailorType=row.querySelector(".sailorSelect").value
 const boost=row.querySelector(".boostToggle")?.checked || false
+
+const recruits=Number(row.querySelector(".recInput").value) || 0
+const experts=Number(row.querySelector(".expInput").value) || 0
+const vets=Number(row.querySelector(".vetInput").value) || 0
 
 const classes=[...row.querySelectorAll(".classSelect")]
 .map(c=>c.value)
@@ -873,10 +871,14 @@ level:levels[i]
 }))
 
 return{
+nation:nation,
 role:role,
 sailorType:sailorType,
 classPath:classPath,
 boost:boost,
+recruits:recruits,
+experts:experts,
+vets:vets,
 finalLevel:125
 }
 
@@ -892,15 +894,27 @@ const results=CrewEngine.buildCrew(crew) || []
 
 const rows=document.querySelectorAll("#crewTable tbody tr")
 
+let totalRepair = 0;
+let totalEngine = 0;
+const statBlockStyle = "font-size:12px; text-align:left; display:inline-block; margin-right:5px; vertical-align:top; border:1px solid #ddd; padding:2px;"
+
 results.forEach((stats,i)=>{
 
 const row=rows[i]
+const c=crew[i]
 
 const cell=row.querySelector(".statsCell")
 
 if(!cell) return
 
+const metrics = CrewEngine.calculateTrueAbilities(stats, c.role, c.recruits, c.experts, c.vets, c.nation);
+
+totalRepair += metrics.repPerSec;
+if(c.role === "Engineer") totalEngine += metrics.engineOH;
+
 cell.innerHTML=`
+<div style="${statBlockStyle}">
+<b>Base:</b><br>
 Pot:${stats.potential}<br>
 Acc:${stats.accuracy}<br>
 Rld:${stats.reload}<br>
@@ -912,9 +926,26 @@ Eng:${stats.engine}<br>
 Air:${stats.aircraft}<br>
 Ftr:${stats.fighter}<br>
 Bom:${stats.bomber}
+</div>
+<div style="${statBlockStyle}">
+<b>True Ability:</b><br>
+Rep/s: ${metrics.repPerSec.toFixed(3)}<br>
+Eng/s: ${c.role==='Engineer' ? metrics.engineOH.toFixed(3) : '-'}<br>
+Acc: ${metrics.accPct.toFixed(1)}%<br>
+Rld: ${metrics.rldPct.toFixed(1)}%<br>
+${metrics.priCap ? `Pri Cap: ${(metrics.priTA/metrics.priCap*100).toFixed(1)}%` : ''}
+</div>
 `
 
 })
+
+const totalsDiv = document.getElementById("crewTotals")
+totalsDiv.style.display = "block"
+
+const REPAIR_CAP = 280;
+const totalRepPct = (totalRepair / REPAIR_CAP) * 100;
+document.getElementById("repairTotal").innerHTML = "<b>Total Repair/sec:</b> " + totalRepair.toFixed(3) + " (" + totalRepPct.toFixed(1) + "% of cap)";
+document.getElementById("engineTotal").innerHTML = "<b>Total Engine OH/sec:</b> " + totalEngine.toFixed(3);
 
 }
 </script>
