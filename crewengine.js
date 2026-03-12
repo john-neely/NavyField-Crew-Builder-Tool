@@ -148,7 +148,7 @@ let rldPct = (ta.reload / RLD_CAP) * 100;
         priTA: priTA,
         accPct: accPct,
         rldPct: rldPct,
-        sailorWeight: weight / 2 // in tons
+        sailorWeight: (recruits + experts + vets) / 2 // in tons
     };
 
 }
