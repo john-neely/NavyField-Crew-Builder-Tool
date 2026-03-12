@@ -124,15 +124,17 @@ const RLD_CAP = 2100000;
 let priCap = null;
 let priTA = 0;
 
-if (role === "Torper") { priCap = 1000000; priTA = ta.torpedo; }
-else if (role === "Sonar") { priCap = 4000000; priTA = ta.potential; }
-else if (role === "Planesman") { 
-    priCap = (nation === "UK" || nation === "US" || nation === "SN") ? 6500000 : 5000000; 
-    priTA = ta.potential; 
-}
-else if (role === "Seaman" || role === "BO") {
-    priCap = 900;
-    priTA = ta.restore;
+if (typeof rolePrimaryStats !== "undefined" && rolePrimaryStats[role]) {
+    const roleData = rolePrimaryStats[role];
+    if (roleData.stat) {
+        priTA = ta[roleData.stat] || 0;
+        priCap = roleData.cap;
+        
+        // Handle Planesman nation bump
+        if (role === "Planesman" && (nation === "UK" || nation === "US" || nation === "SN")) {
+            priCap = 6500000;
+        }
+    }
 }
 
 let accPct = (ta.accuracy / ACC_CAP) * 100;
