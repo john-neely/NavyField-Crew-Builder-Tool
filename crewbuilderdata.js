@@ -34,6 +34,28 @@ const abilities = [
 
 
 /* =========================
+ROLE PRIMARY STATS CALCULATION
+========================= */
+
+const rolePrimaryStats = {
+    "BO": { stat: null, cap: null },
+    "Scout": { stat: null, cap: null }, // User can define cap later if needed
+    "Main Gunner": { stat: null, cap: null }, // Ignores primary cap (uses Acc/Rld)
+    "AA/DP": { stat: null, cap: null },
+    "HH": { stat: null, cap: null },
+    "Repair": { stat: null, cap: null }, // Ignores primary cap (uses Rep/sec)
+    "Engineer": { stat: null, cap: null }, // Ignores primary cap (uses Eng/sec)
+    "Fighter": { stat: null, cap: null }, // User can define fighter cap
+    "TB": { stat: null, cap: null }, // User can define bomber cap
+    "DB": { stat: null, cap: null }, // User can define bomber cap
+    "Sonar": { stat: "potential", cap: 4000000 },
+    "Planesman": { stat: "potential", cap: 5000000 }, // Base cap; crewengine.js handles 6.5m nation bump
+    "Torper": { stat: "torpedo", cap: 1000000 },
+    "Seaman": { stat: null, cap: null }
+};
+
+
+/* =========================
 SHIPS
 ========================= */
 
