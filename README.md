@@ -1,3 +1,4 @@
-https://john-neely.github.io/NavyField-Tools/Crew-Builder/
+<h1>NavyField Tools</h1>
 
-https://john-neely.github.io/NavyField-Tools/Sailor-Ability-Calc/
+<a href="Crew-Builder/">Crew Builder</a><br>
+<a href="Sailor-Ability-Calc/">Sailor Ability Calculator</a>
